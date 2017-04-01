@@ -33,18 +33,20 @@ public class Crawler implements Runnable{
 		this.current_Depth=depth; 
 		delay=0;
 	}
-	@SuppressWarnings({ "deprecation"})
+	@SuppressWarnings({ "deprecation", "resource"})
 	public void processPage(String URL,int depth)throws SQLException, IOException, InterruptedException, ParseException{
-		String sql = "DELETE FROM Urlsforcrawling LIMIT 1;";
-		PreparedStatement stmt = Crawler.db.conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-		stmt.execute();
+		PreparedStatement stmt = null;
 		//check if the given URL is already in database
-		sql = "select * from Crawler where URL = '"+URL+"' Limit 1 ;";
+		String sql = "select * from Crawler where URL = '"+URL+"' AND ToUpdate = 0 Limit 1 ;";
 		ResultSet rs = db.runSql(sql);
 		stmt = Crawler.db.conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
 		if(rs.next()){
 			// if at least one row of URL don't add again
 		}else{
+			sql="DELETE FROM Crawler WHERE URL='"+URL+"';";
+			stmt = Crawler.db.conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+			stmt.execute();
+			
 			DateFormat df = new SimpleDateFormat("HH:mm:ss");
 			
 			if(!isAllowed(URL))
@@ -85,7 +87,7 @@ public class Crawler implements Runnable{
 			Document doc = Jsoup.connect(URL).ignoreHttpErrors(true).timeout(70000).get();
 			
 			//store the URL to database to avoid parsing again
-			sql = "INSERT INTO `Crawler`(`URL`, `Document`, `indexed`,`freq`,`depth`,`CrawledTime`) VALUES " + "(?,?,?,?,?,?)" ;
+			sql = "INSERT INTO `Crawler`(`URL`, `Document`, `indexed`,`freq`,`depth`,`CrawledTime`,`ToUpdate`) VALUES " + "(?,?,?,?,?,?,?)" ;
 			stmt = Crawler.db.conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
 			int freq = (current_Depth+1)*10; 
 			Date d1= new Date();
@@ -95,6 +97,7 @@ public class Crawler implements Runnable{
 			stmt.setInt(4,freq);
 			stmt.setInt(5,depth);
 			stmt.setString(6,df.format(d1));
+			stmt.setString(7,"0");
 			stmt.execute();
 
 			
@@ -117,7 +120,9 @@ public class Crawler implements Runnable{
 			}
 			System.out.println("URL: " + URL + " was crawled successfully.");
 		}
-		
+		sql = "DELETE FROM urlsforcrawling WHERE URL = '"+URL+"' LIMIT 1";
+		stmt = db.conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+		stmt.execute();
 	}
 	@Override
 	
