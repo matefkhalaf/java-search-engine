@@ -9,6 +9,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Scanner;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -40,6 +42,7 @@ public class Main {
 		Scanner sc = new Scanner(System.in);
 		int nthreads=sc.nextInt();
 		ExecutorService executor = Executors.newFixedThreadPool(nthreads);
+		final BlockingQueue<Runnable> queue = new ArrayBlockingQueue<Runnable>(nthreads*10);
 		
 		sql = "select * from Urlsforcrawling where selected=0 Limit 1 ;";
 		ResultSet rs = Crawler.db.runSql(sql);
@@ -58,12 +61,14 @@ public class Main {
 			stmt.setString(1, rs.getString(1));
 			stmt.execute();
 			Runnable c = new Crawler(rs.getString(2),rs.getInt(3));
-			executor.execute(c);
+			//executor.execute(c);
+			queue.put(c);
+			executor.execute(queue.take());
 			}
 			
 			Date d= new Date();
 			
-			sql = "select * from Crawler ;";
+			sql = "select * from Crawler where ToUpdate != 1;";
 			rs = Crawler.db.runSql(sql);
 			while(rs.next())
 			{
