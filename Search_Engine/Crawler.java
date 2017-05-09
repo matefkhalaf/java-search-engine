@@ -88,6 +88,7 @@ public class Crawler implements Runnable{
 			sql="SELECT Reference from `Urlsforcrawling` WHERE URL='"+URL+"'";
                         ResultSet rs1 = db.runSql(sql);
 			//store the URL to database to avoid parsing again
+<<<<<<< HEAD:Search_Engine/Crawler.java
                         while (rs1.next()){
 			sql="DELETE  from `Rank` WHERE Reference='"+rs1.getString("Reference")+"'AND URL='"+URL+"'";
                         db.runSql2(sql);
@@ -98,6 +99,9 @@ public class Crawler implements Runnable{
 			stmt.execute();
                         }
                         sql = "INSERT INTO `Crawler`(`URL`, `Document`, `indexed`,`freq`,`depth`,`CrawledTime`,`ToUpdate`) VALUES " + "(?,?,?,?,?,?,?)" ;
+=======
+			sql = "INSERT INTO `Crawler`(`URL`, `Document`, `indexed`,`freq`,`depth`,`CrawledTime`,`ToUpdate`) VALUES " + "(?,?,?,?,?,?,?)" ;
+>>>>>>> origin/master:Crawler.java
 			stmt = Crawler.db.conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
 			int freq = (current_Depth+1)*10; 
 			Date d1= new Date();
