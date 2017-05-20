@@ -1,12 +1,12 @@
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import org.tartarus.martin.*;
+
+import org.tartarus.martin.Stemmer;
+
 
 public class QueryProcessing {
 	
@@ -16,9 +16,9 @@ public class QueryProcessing {
 	FileReader fr = null;
 	ArrayList<String> parts = new ArrayList<String>();
 	
-	private ArrayList<Document> EachWord(String query) throws IOException, SQLException
+	private ArrayList<ArrayList<String>> EachWord(String query) throws IOException, SQLException
 	{
-		ArrayList<Document> doc = new ArrayList<Document>();
+		ArrayList<ArrayList<String>> urldoc = new ArrayList<ArrayList<String>>();
 		String[] part=query.split(" ");
 		int len=part.length;
 			for (int i=0;i<len;i++)
@@ -55,26 +55,33 @@ public class QueryProcessing {
 			
 			for (int i=0;i<parts.size();i++)
 			{
-				String sql = "select URL from indexer where KeyWord = '"+parts.get(i)+"';";
+				String sql = "select DISTINCT URL from indexer where KeyWord = '"+parts.get(i)+"';";
 				ResultSet rs = db.runSql(sql);
 				while(rs.next())
 				{
-					doc.add(Jsoup.connect(rs.getString(1)).ignoreHttpErrors(true).timeout(70000).get());
+					ArrayList<String> xurldoc = new ArrayList<String>();
+					sql = "select URL,Document from Crawler where URL = '"+rs.getString(1)+"';";						
+					ResultSet rs2 = db.runSql(sql);
+					if(rs2.next())
+					{
+						xurldoc.add(rs2.getString(1));
+						xurldoc.add(rs2.getString(2));
+						urldoc.add(xurldoc);
+					}
 				}
 			}
-		return doc;
+		return urldoc;
 	}
 	
-	private ArrayList<Document> PhraseSearch(String query) throws SQLException, IOException
+	private ArrayList<ArrayList<String>> PhraseSearch(String query) throws SQLException, IOException
 	{
-		ArrayList<Document> doc = new ArrayList<Document>();
+		ArrayList<ArrayList<String>> urldoc = new ArrayList<ArrayList<String>>();
 		String[] part=query.split(" ");
 		int len=part.length;
 			for (int i=0;i<len;i++)
 			{
 				parts.add(part[i]);
 			}
-		
 
 			fr = new FileReader(filename);
 			br = new BufferedReader(fr);
@@ -132,27 +139,35 @@ public class QueryProcessing {
 				}
 				if(tempbool==true)
 				{
-					doc.add(Jsoup.connect(Rs.get(0).getString(4)).ignoreHttpErrors(true).timeout(70000).get());
+					ArrayList<String> xurldoc = new ArrayList<String>();
+					String sql = "select URL,Document from Crawler where URL = '"+Rs.get(0).getString(4)+"';";
+					ResultSet rs2 = db.runSql(sql);
+					if(rs2.next())
+					{
+						xurldoc.add(rs2.getString(1));
+						xurldoc.add(rs2.getString(2));
+						urldoc.add(xurldoc);
+					}
 				}
 				else
 				{
 					tempbool=false;
 				}
 			}
-		return doc;
+		return urldoc;
 	}
-	public ArrayList<Document> GetDocument(String s) throws IOException, SQLException
+	public ArrayList<ArrayList<String>> GetDocument(String s) throws IOException, SQLException
 	{
-		ArrayList<Document> doc=new ArrayList<Document>();
+		ArrayList<ArrayList<String>> urldoc = new ArrayList<ArrayList<String>>();
 			if(s.charAt(0)!='"')
 			{
-				 doc = EachWord(s);
+				 urldoc = EachWord(s);
 			}
 			else
 			{
-				doc=PhraseSearch(s.substring(1, s.length()-1)); 
+				urldoc=PhraseSearch(s.substring(1, s.length()-1)); 
 			}
-		return doc;
+		return urldoc;
 	}
 	
 }

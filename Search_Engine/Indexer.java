@@ -7,7 +7,7 @@ import java.util.Scanner;
 import org.jsoup.*;
 import org.jsoup.nodes.*;
 import org.jsoup.select.*;
-import org.tartarus.martin.*;
+import org.tartarus.martin.Stemmer;
  
 public class Indexer implements Runnable{
 	public static DB db = new DB();
