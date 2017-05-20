@@ -133,12 +133,12 @@ public class Indexer implements Runnable{
 		    		mystem.stem();
 		    		String mys = mystem.toString();
 		    		
-		    		if(!mys.equals(head[i].toLowerCase())) {
+		    		//if(!mys.equals(head[i].toLowerCase())) {
 		    		stmt.setString(1, mys);
 					stmt.setString(2, "Header");
 					stmt.setString(3, rs.getString("URL"));
 					stmt.execute();
-		    		}
+		    		//}
 		    			
 		    		stmt.setString(1, head[i].toLowerCase());
 					stmt.setString(2, "Header");
@@ -165,12 +165,12 @@ public class Indexer implements Runnable{
 			    		mystem.stem();
 			    		String mys = mystem.toString();
 			    		
-			    		if(!mys.equals(tit[i].toLowerCase())) {
+			    		//if(!mys.equals(tit[i].toLowerCase())) {
 			    		stmt.setString(1, mys);
 						stmt.setString(2, "Title");
 						stmt.setString(3, rs.getString("URL"));
 						stmt.execute();
-			    		}
+			    		//}
 						
 		    			stmt.setString(1, tit[i].toLowerCase());
 					stmt.setString(2, "Title");
@@ -198,12 +198,12 @@ public class Indexer implements Runnable{
 			    		mystem.stem();
 			    		String mys = mystem.toString();
 			    		
-			    		if(!mys.equals(bodyy[i].toLowerCase())) {
+			    		//if(!mys.equals(bodyy[i].toLowerCase())) {
 			    		stmt.setString(1, mys);
 						stmt.setString(2, "Body");
 						stmt.setString(3, rs.getString("URL"));
 						stmt.execute();
-			    		}	
+			    		//}	
 		    			
 		    			stmt.setString(1, bodyy[i].toLowerCase());
 					stmt.setString(2, "Body");
@@ -231,12 +231,12 @@ public class Indexer implements Runnable{
 			    		mystem.stem();
 			    		String mys = mystem.toString();
 			    		
-			    		if(!mys.equals(Description[i].toLowerCase())) {
+			    		//if(!mys.equals(Description[i].toLowerCase())) {
 			    		stmt.setString(1, mys);
 						stmt.setString(2, "Description");
 						stmt.setString(3, rs.getString("URL"));
 						stmt.execute();
-			    		}
+			    		//}
 		    			
 		    			stmt.setString(1, Description[i].toLowerCase());
 					stmt.setString(2, "Description");
@@ -265,12 +265,12 @@ public class Indexer implements Runnable{
 			    		mystem.stem();
 			    		String mys = mystem.toString();
 			    		
-			    		if(!mys.equals(Keywords[i].toLowerCase())) {
+			    		//if(!mys.equals(Keywords[i].toLowerCase())) {
 			    		stmt.setString(1, mys);
 						stmt.setString(2, "Keywords");
 						stmt.setString(3, rs.getString("URL"));
 						stmt.execute();
-			    		}
+			    		//}
 		    			
 		    		stmt.setString(1, Keywords[i].toLowerCase());
 					stmt.setString(2, "Keywords");
