@@ -1,12 +1,11 @@
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-
-import org.tartarus.martin.Stemmer;
-
 
 public class QueryProcessing {
 	
@@ -19,6 +18,9 @@ public class QueryProcessing {
 	private ArrayList<ArrayList<String>> EachWord(String query) throws IOException, SQLException
 	{
 		ArrayList<ArrayList<String>> urldoc = new ArrayList<ArrayList<String>>();
+		ArrayList<Integer> rank = new ArrayList<Integer>();
+		ArrayList<String> URL = new ArrayList<String>();
+		ArrayList<Document> doc = new ArrayList<Document>();
 		String[] part=query.split(" ");
 		int len=part.length;
 			for (int i=0;i<len;i++)
@@ -55,19 +57,68 @@ public class QueryProcessing {
 			
 			for (int i=0;i<parts.size();i++)
 			{
-				String sql = "select DISTINCT URL from indexer where KeyWord = '"+parts.get(i)+"';";
+				String sql = "select URL from indexer where KeyWord = '"+parts.get(i)+"';";
 				ResultSet rs = db.runSql(sql);
 				while(rs.next())
 				{
-					ArrayList<String> xurldoc = new ArrayList<String>();
-					sql = "select URL,Document from Crawler where URL = '"+rs.getString(1)+"';";						
-					ResultSet rs2 = db.runSql(sql);
-					if(rs2.next())
+					URL.add(rs.getString(1));
+				}
+			}
+			for (int i=0;i<URL.size()-1;i++)
+			{
+				for (int j=i+1;j<URL.size();j++)
+				{
+					if(URL.get(i).equals(URL.get(j)))
 					{
-						xurldoc.add(rs2.getString(1));
-						xurldoc.add(rs2.getString(2));
-						urldoc.add(xurldoc);
+						URL.remove(j);
+						j--;
 					}
+					
+				}
+			}
+			int t=0;
+			for(int i=0;i<URL.size();i++)
+			{
+				t=0;
+				for(int j=0;j<parts.size();j++)
+				{
+					String sql = "select rank from ranker where KeyWord = '"+parts.get(j)+"' and URL = '"+URL.get(i)+"';";
+					ResultSet rs = db.runSql(sql);
+					while(rs.next())
+					{
+						t+=rs.getInt(1);
+					}
+					rank.add(t);
+				}
+			}
+			for(int i=0;i<rank.size()-1;i++)
+			{
+				String tempst="";
+				int tempint=0;
+				for(int j=i+1;j<rank.size();j++)
+				{
+					if(rank.get(i)<rank.get(j))
+					{
+						tempint=rank.get(i);
+						rank.set(i, rank.get(j));
+						rank.set(j, tempint);
+						tempst=URL.get(i);
+						URL.set(i, URL.get(j));
+						URL.set(j, tempst);
+					}
+				}
+			}
+			for(int i=0;i<URL.size();i++)
+			{
+				doc.add(Jsoup.connect(URL.get(i)).ignoreHttpErrors(true).timeout(70000).get());
+				ArrayList<String> xurldoc = new ArrayList<String>();
+				String sql = "select URL,Document from Crawler where URL = '"+URL.get(i)+"';";						
+				ResultSet rs2 = db.runSql(sql);
+				if(rs2.next())
+				{
+					xurldoc.add(rs2.getString(1));
+					xurldoc.add(rs2.getString(2));
+					urldoc.add(xurldoc);
 				}
 			}
 		return urldoc;
@@ -76,12 +127,16 @@ public class QueryProcessing {
 	private ArrayList<ArrayList<String>> PhraseSearch(String query) throws SQLException, IOException
 	{
 		ArrayList<ArrayList<String>> urldoc = new ArrayList<ArrayList<String>>();
+		ArrayList<Integer> rank = new ArrayList<Integer>();
+		ArrayList<String> URL = new ArrayList<String>();
+		ArrayList<Document> doc = new ArrayList<Document>();
 		String[] part=query.split(" ");
 		int len=part.length;
 			for (int i=0;i<len;i++)
 			{
 				parts.add(part[i]);
 			}
+		
 
 			fr = new FileReader(filename);
 			br = new BufferedReader(fr);
@@ -139,21 +194,72 @@ public class QueryProcessing {
 				}
 				if(tempbool==true)
 				{
-					ArrayList<String> xurldoc = new ArrayList<String>();
-					String sql = "select URL,Document from Crawler where URL = '"+Rs.get(0).getString(4)+"';";
-					ResultSet rs2 = db.runSql(sql);
-					if(rs2.next())
-					{
-						xurldoc.add(rs2.getString(1));
-						xurldoc.add(rs2.getString(2));
-						urldoc.add(xurldoc);
-					}
+					URL.add(Rs.get(0).getString(4));
 				}
 				else
 				{
 					tempbool=false;
 				}
 			}
+			
+			for (int i=0;i<URL.size()-1;i++)
+			{
+				for (int j=i+1;j<URL.size();j++)
+				{
+					if(URL.get(i).equals(URL.get(j))){
+						URL.remove(j);
+						j--;
+					}
+						
+				}
+			}
+			int t=0;
+			for(int i=0;i<URL.size();i++)
+			{
+				t=0;
+				for(int j=0;j<parts.size();j++)
+				{
+					String sql = "select rank from ranker where KeyWord = '"+parts.get(j)+"' and URL = '"+URL.get(i)+"';";
+					ResultSet rs = db.runSql(sql);
+					while(rs.next())
+					{
+						t+=rs.getInt(1);
+					}
+					rank.add(t);
+				}
+			}
+			for(int i=0;i<rank.size()-1;i++)
+			{
+				String tempst="";
+				int tempint=0;
+				for(int j=i+1;j<rank.size();j++)
+				{
+					if(rank.get(i)<rank.get(j))
+					{
+						tempint=rank.get(i);
+						rank.set(i, rank.get(j));
+						rank.set(j, tempint);
+						tempst=URL.get(i);
+						URL.set(i, URL.get(j));
+						URL.set(j, tempst);
+					}
+				}
+			}
+			for(int i=0;i<URL.size();i++)
+			{
+				doc.add(Jsoup.connect(URL.get(i)).ignoreHttpErrors(true).timeout(70000).get());
+				ArrayList<String> xurldoc = new ArrayList<String>();
+				String sql = "select URL,Document from Crawler where URL = '"+URL.get(i)+"';";						
+				ResultSet rs2 = db.runSql(sql);
+				if(rs2.next())
+				{
+					xurldoc.add(rs2.getString(1));
+					xurldoc.add(rs2.getString(2));
+					urldoc.add(xurldoc);
+				}
+			}
+	
+			
 		return urldoc;
 	}
 	public ArrayList<ArrayList<String>> GetDocument(String s) throws IOException, SQLException

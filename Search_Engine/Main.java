@@ -52,7 +52,7 @@ public class Main {
 		index.start();
 		Thread tf = new Thread(new TF());
 		tf.start();
-                Thread idf = new Thread(new IDF());
+        Thread idf = new Thread(new IDF());
 		idf.start();
 		Thread prank = new Thread(new PRank());
 		prank.start();

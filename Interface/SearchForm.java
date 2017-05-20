@@ -30,6 +30,9 @@ public class SearchForm extends HttpServlet {
 			DB db = new DB();
 
 			String searchInput = request.getParameter("SearchBox");
+			//if(!searchInput.endsWith("\"")){
+				//searchInput = searchInput.replaceAll("\"", "");
+			//}
 			System.out.print(searchInput);
 			String page = request.getParameter("page");
 			if(page == null) { 
@@ -45,6 +48,15 @@ public class SearchForm extends HttpServlet {
 			QueryProcessing myq = new QueryProcessing();
 			urldoc = myq.GetDocument(searchInput);
 
+
+			String searchparse[] = new String[3];
+			if(!searchInput.endsWith("\"")){
+			searchparse = searchInput.split(" ");
+			}else {
+				searchInput = searchInput.replaceAll("\"", "");
+				searchparse[0] = searchInput;
+			}
+			
 			if(urldoc.size()!=0)
 			{
 				double count = urldoc.size();
@@ -87,10 +99,12 @@ public class SearchForm extends HttpServlet {
 
 					for(int k = 0; k< Description.length; k++) {
 						String [] s = {};
-						if(Description[k].contains(" " + searchInput + " ")) {
+						for(String ll:searchparse) {
+							
+						if(Description[k].contains(" " + ll + " ")) {
 							s = Description[k].split(" ");
 							for(String it:s) {
-								if(it.equals(searchInput)) {
+								if(it.equals(ll)) {
 									snippets+="<b>";
 									snippets += it;
 									snippets += " ";
@@ -104,6 +118,7 @@ public class SearchForm extends HttpServlet {
 
 							snippets+="...";
 
+						}
 						}
 					}
 
@@ -117,24 +132,27 @@ public class SearchForm extends HttpServlet {
 					String[] bod = body.split("\\.");
 					for(int z= 0; z<bod.length; z++) {
 						String [] s = {};
-						if(bod[z].contains(" " + searchInput + " ")) {
-							s = bod[z].split(" ");
-							for(String it:s) {
-								if(it.equals(searchInput)) {
-									snippets+="<b>";
-									snippets += it;
-									snippets += " ";
-									snippets+="</b>";
-								}else {
-									snippets += it;
-									snippets += " ";
+						for(String ll:searchparse) {
+							
+							if(bod[z].contains(" " + ll + " ")) {
+								s = bod[z].split(" ");
+								for(String it:s) {
+									if(it.equals(ll)) {
+										snippets+="<b>";
+										snippets += it;
+										snippets += " ";
+										snippets+="</b>";
+									}else {
+										snippets += it;
+										snippets += " ";
+									}
 								}
+
+
+								snippets+="...";
+
 							}
-
-
-							snippets+="...";
-
-						}
+							}
 					}
 
 					if(snippets.equals("") || snippets.equals(" ")) {
